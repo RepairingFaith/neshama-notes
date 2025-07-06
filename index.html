@@ -375,28 +375,81 @@
       "What made you feel like you belonged?"
       
     ];
-    const indexKey = 'neshama-current-prompt-index';
-    let index = parseInt(localStorage.getItem(indexKey) || '0', 10);
-
-    if (index >= prompts.length) index = 0;
-    const promptText = prompts[index];
-    document.getElementById('prompt-text').innerText = promptText;
-
-    // Save updated index for next visit
-    localStorage.setItem(indexKey, index + 1);
-
-    const journalKey = 'journal-response-' + index;
-    const journalEl = document.getElementById('journal-entry');
-    const saveStatus = document.getElementById('save-status');
-
-    const saved = localStorage.getItem(journalKey);
-    if (saved) journalEl.value = saved;
-
-    journalEl.addEventListener('input', () => {
-      localStorage.setItem(journalKey, journalEl.value);
-      saveStatus.style.opacity = 1;
-      setTimeout(() => saveStatus.style.opacity = 0, 1500);
-    });
-  </script>
+     const indexKey = 'neshama-current-prompt-index';
+      let index = parseInt(localStorage.getItem(indexKey) || '0', 10);
+      if (index >= prompts.length) index = 0;
+    
+      const promptText = prompts[index];
+      document.getElementById('prompt-text').innerText = promptText;
+    
+      localStorage.setItem(indexKey, index + 1);
+    
+      const journalKey = 'journal-response-' + index;
+      const journalEl = document.getElementById('journal-entry');
+      const saveStatus = document.getElementById('save-status');
+    
+      const saved = localStorage.getItem(journalKey);
+      if (saved) journalEl.value = saved;
+    
+      journalEl.addEventListener('input', () => {
+        localStorage.setItem(journalKey, journalEl.value);
+        saveStatus.style.opacity = 1;
+        setTimeout(() => saveStatus.style.opacity = 0, 1500);
+      });
+    
+      // Toggle Past Entries View
+      const toggleBtn = document.createElement('button');
+      toggleBtn.innerText = '📖 View Past Entries';
+      toggleBtn.style.margin = '12px auto';
+      toggleBtn.style.display = 'block';
+      document.body.appendChild(toggleBtn);
+    
+      const pastEntriesContainer = document.createElement('div');
+      pastEntriesContainer.style.display = 'none';
+      pastEntriesContainer.style.marginTop = '16px';
+      document.body.appendChild(pastEntriesContainer);
+    
+      toggleBtn.addEventListener('click', () => {
+        pastEntriesContainer.innerHTML = '';
+        if (pastEntriesContainer.style.display === 'none') {
+          for (let i = 0; i < prompts.length; i++) {
+            const entry = localStorage.getItem('journal-response-' + i);
+            if (entry) {
+              const block = document.createElement('div');
+              block.style.marginBottom = '16px';
+              block.innerHTML = `<strong>Prompt:</strong> ${prompts[i]}<br><strong>Entry:</strong><br>${entry.replace(/\n/g, '<br>')}`;
+              pastEntriesContainer.appendChild(block);
+            }
+          }
+          pastEntriesContainer.style.display = 'block';
+        } else {
+          pastEntriesContainer.style.display = 'none';
+        }
+      });
+    
+      // Download All Entries Button
+      const downloadBtn = document.createElement('button');
+      downloadBtn.innerText = '💾 Download All Entries';
+      downloadBtn.style.margin = '12px auto';
+      downloadBtn.style.display = 'block';
+      document.body.appendChild(downloadBtn);
+    
+      downloadBtn.addEventListener('click', () => {
+        let text = '';
+        for (let i = 0; i < prompts.length; i++) {
+          const entry = localStorage.getItem('journal-response-' + i);
+          if (entry) {
+            text += `Prompt: ${prompts[i]}\nEntry:\n${entry}\n\n`;
+          }
+        }
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'neshama-journal.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    </script>
 </body>
 </html>
