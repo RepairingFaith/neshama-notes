@@ -375,19 +375,25 @@
   "What made you feel like you belonged?"
       
     ];
-    const today = new Date();
-    const index = today.getDate() % prompts.length;
+    const indexKey = 'neshama-current-prompt-index';
+    let index = parseInt(localStorage.getItem(indexKey) || '0', 10);
+
+    if (index >= prompts.length) index = 0;
     const promptText = prompts[index];
     document.getElementById('prompt-text').innerText = promptText;
-    const key = 'journal-response-' + index;
+
+    // Save updated index for next visit
+    localStorage.setItem(indexKey, index + 1);
+
+    const journalKey = 'journal-response-' + index;
     const journalEl = document.getElementById('journal-entry');
     const saveStatus = document.getElementById('save-status');
 
-    const saved = localStorage.getItem(key);
+    const saved = localStorage.getItem(journalKey);
     if (saved) journalEl.value = saved;
 
     journalEl.addEventListener('input', () => {
-      localStorage.setItem(key, journalEl.value);
+      localStorage.setItem(journalKey, journalEl.value);
       saveStatus.style.opacity = 1;
       setTimeout(() => saveStatus.style.opacity = 0, 1500);
     });
